@@ -1,33 +1,58 @@
-from flask import Blueprint, render_template, request, flash #help on organizing the app
+from flask import Blueprint, render_template, request, flash, redirect, url_for
+from sqlalchemy.engine import url
+from sqlalchemy.sql.sqltypes import Boolean
+from werkzeug.utils import redirect #help on organizing the app
+from .models import User
+from werkzeug.security import generate_password_hash, check_password_hash
+from . import db
+from flask_login import login_user, login_required,logout_user, current_user
 
 auth = Blueprint('auth', __name__) #easier to name as filename
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
-    data = request.form
-    print(data)    
+       
     if request.method =='POST':
-        pass
+        email = request.form.get('email')
+        password = request.form.get('password')
+
+        user = User.query.filter_by(email=email).first()
+        if user:
+            if check_password_hash(user.password,password):
+                flash('Logged in successfully!', category='success')
+                login_user(user, remember=True)
+                return redirect(url_for('views.home'))
+            else:
+                flash('Incorrect password', category='error')
+        else:
+            flash('Email does not exist', category='error')
+        
     elif request.method == 'GET':
         pass
 
-    return render_template("login.html",  text="testing", user="Madoowl")
+    return render_template("login.html", user=current_user)
 
 @auth.route('/logout')
+@login_required
 def logout():
-    return "<p>logout<p>"
+    logout_user()
+    return redirect(url_for('auth.login'))
 
 @auth.route('/sign-up', methods=['GET','POST'])
 def sign_up():
     if request.method =='POST':
         email = request.form.get('email')
-        firstName = request.form.get('firstName')
+        first_name = request.form.get('firstName')
         password1 = request.form.get('password1')
         password2 = request.form.get('password2')
         
-        if len(email) <3:
+        user = User.query.filter_by(email=email).first()
+
+        if user:
+            flash('Email already exists.', category='error')
+        elif len(email) <3:
             flash('email must be greater than 4 caracters', category='error')
-        elif len(firstName) <2:
+        elif len(first_name) <2:
             flash('first name must be greater than 2 caracters', category='error')
         elif password1 != password2:
             flash('passwords do not match', category='error')
@@ -35,10 +60,15 @@ def sign_up():
             flash('Password must be greater than 7 caracters', category='error')
         #TODO vérification regex
         else:
+            new_user = User(email=email, first_name=first_name,password=generate_password_hash(password1, method='sha256'))
+            db.session.add(new_user)
+            db.session.commit()
+
             flash('account created', category='success')
+            return redirect(url_for('views.home'))
             # add user to DB
 
     elif request.method == 'GET':
         pass
-    
-    return render_template("sign_up.html")
+
+    return render_template("sign_up.html", user=current_user)
