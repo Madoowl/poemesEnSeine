@@ -4,7 +4,8 @@ function deleteNote(noteId) {
       body: JSON.stringify({ noteId:noteId }),
     }).then((_res) => {
       window.location.href = "/";
-    });
+    })
+    console.log('note id' + noteId);
 };
 
 function updateNote(noteId,note){

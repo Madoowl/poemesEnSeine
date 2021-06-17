@@ -7,6 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from . import db
 from flask_login import login_user, login_required,logout_user, current_user
 
+
 auth = Blueprint('auth', __name__) #easier to name as filename
 
 @auth.route('/login', methods=['GET', 'POST'])
@@ -29,7 +30,7 @@ def login():
         
     elif request.method == 'GET':
         pass
-
+    print(current_user)
     return render_template("login.html", user=current_user)
 
 @auth.route('/logout')

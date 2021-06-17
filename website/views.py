@@ -1,20 +1,19 @@
 import re
-from flask import Blueprint, render_template, request, flash
+from flask import Blueprint, render_template, request, flash, redirect, url_for
 from flask.json import jsonify #help on organizing the app
 
 from flask_login import login_required, current_user
-from .models import Note
+from .models import Note, User
 from . import db
 import json
 
-
+from sqlalchemy import select
 
 views = Blueprint('views', __name__) #easier to name as filename
 
 @views.route('/', methods=['GET','POST']) #decorator to main page
 @login_required
 def home():
-    #topos = Topos.query.fetchall()
     if request.method == 'POST':
         note = request.form.get('note')
 
@@ -25,8 +24,8 @@ def home():
             db.session.add(new_note)
             db.session.commit()
             flash('Note added!', category='success')
-
-    return render_template("home.html", user=current_user) 
+    print(current_user.get_id())
+    return render_template("home.html", user=current_user, user_id=current_user.get_id()) 
     
 @views.route('/delete-note', methods=['POST'])
 def delete_note():
@@ -34,7 +33,7 @@ def delete_note():
     noteId = note['noteId']
     note = Note.query.get(noteId)
     if note:
-        if note.user_id == current_user.id:
+        if str(note.user_id) == current_user.get_id():
             db.session.delete(note)
             db.session.commit()
 
@@ -43,19 +42,22 @@ def delete_note():
 @views.route(f'/update-note/<int:id>', methods=['POST','GET'])
 def update_note(id):
     note = Note.query.filter_by(id=id).first()
-    if note :
-
-        if request.method == 'POST':
+    print(note)
+    
+    if request.method == 'POST':
+        if note.user_id == current_user :
             new_note = request.form.get('note')
-            note = Note.query().where(id=note.id).update(data=new_note)
+            note.data = new_note
             db.session.commit()
             flash('update executed', category='success')
             return render_template("home.html", user=current_user)
-
-        else :
-            flash('something goes wrong', category='error')
+        else:
+            flash('Not yours to edit...', category='error')
+            return redirect(url_for('views.home'))
+    else :
+        flash('On your way to edit, sure?', category='message')
         
-    return render_template(f"update.html", user=current_user, note=note)
+        return render_template("update.html", user=current_user, note=note)
 
 
 # @views.route('/add-topos',methods=['POST','GET'])

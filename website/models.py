@@ -4,8 +4,9 @@ from . import db #import db object from . aka current folder
 from flask_login import UserMixin #custom class for the user class manage authentification credentials
 from sqlalchemy.sql import func
 
+
 import pandas as pd
-import json
+
 
 
 class Note(db.Model):
@@ -25,15 +26,18 @@ class User(db.Model, UserMixin): #user Model
     password = db.Column(db.String(150))
     first_name = db.Column(db.String(150))
     notes = db.relationship('Note') #list of all the notes'id from one user
-    role =  db.Column(db.Integer,unique=False) #geestion des droits utilisateurs
 
-    # TODO add open data file ? add topos table ? - normalisation 1 ? choix technique ?
-# class Topos(db.Model):
+
+# class Role(db.Model):
 #     id = db.Column(db.Integer, primary_key=True)
-#     name = db.Column(db.String(255)) #étiquette
-#     city = db.Column(db.String(50))
-#     details = db.Column(db.String(500))
-#     notes = db.relationship('Note')
+#     name = db.column(db.String(40))
 
-    
 
+
+# class UserMixin(UserMixin):
+    @property
+    def is_admin(self):
+        if self.get_id() == 1:
+            return True
+        else:
+            return False

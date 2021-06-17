@@ -1,5 +1,5 @@
 from website import create_app
-#pb with hot reload and browser cache
+#check from pb with hot reload and browser cache
 app = create_app()
 
 if __name__ == '__main__': #assure the running of the web server when running command 
