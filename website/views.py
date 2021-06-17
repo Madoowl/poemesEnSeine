@@ -3,6 +3,7 @@ from flask import Blueprint, render_template, request, flash, redirect, url_for
 from flask.json import jsonify #help on organizing the app
 
 from flask_login import login_required, current_user
+from sqlalchemy.sql.functions import user
 from .models import Note, User
 from . import db
 import json
@@ -26,14 +27,28 @@ def home():
             flash('Note added!', category='success')
     print(current_user.get_id())
     return render_template("home.html", user=current_user, user_id=current_user.get_id()) 
-    
+
+@views.route('/admin', methods=['GET','POST'])
+def admin():
+    if request.method == 'POST':
+        pass
+    else:
+        #show dashboard v0.1
+        #stmt = Note.query.join(Note, User.id == Note.user_id).add_columns(User.first_name).order_by(User.first_name).all()
+       #notes= db.session.commit()
+        #print(stmt) db.session.query(Note,User).join(User).all() #
+        notes = db.session.query(Note)
+        print(type(notes[1]))
+        return render_template("admin.html", user=current_user, notes=notes)    
+
+
 @views.route('/delete-note', methods=['POST'])
 def delete_note():
     note = json.loads(request.data)
     noteId = note['noteId']
     note = Note.query.get(noteId)
     if note:
-        if str(note.user_id) == current_user.get_id():
+        if str(note.user_id) == current_user.get_id() or current_user.get_id() == '1':# or current_user.get_id() == '1'
             db.session.delete(note)
             db.session.commit()
 
@@ -45,7 +60,7 @@ def update_note(id):
     print(note)
     
     if request.method == 'POST':
-        if note.user_id == current_user :
+        if note.user_id == current_user or current_user.get_id() == '1':
             new_note = request.form.get('note')
             note.data = new_note
             db.session.commit()
