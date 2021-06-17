@@ -1,25 +1,22 @@
 {% extends "base.html" %} {% block title %}Home{% endblock %} {% block content
-      %}
-      <h1 align="center">Notes</h1>
+    %}
+    <h1 align="center">Sites</h1>
       <ul class="list-group list-group-flush" id="notes">
-        <p></p>
         {% for note in user.notes %}
         <li class="list-group-item">
-          <textarea name="note" id="note" class="form-control" form="notes">{{ note.data }}</textarea>
-          <a onClick="deleteNote({{note.id}})" class="close">Delete</a>
-          <a type="submit" class="update" href="/update-note/{{note.id}}">Update</a>
-          
+          {{ topos.data }}
+          <button type="button" class="close" onClick="deleteNote({{ topos.id }})">
             <span aria-hidden="true">&times;</span>
           </button>
         </li>
         {% endfor %}
       </ul>
       <form method="POST">
+        <input type="text" name="name" placeholder="name">
         <textarea name="note" id="note" class="form-control"></textarea>
-        
+        <br />
         <div align="center">
-          <button type="submit" class="btn btn-primary">Add Note</button>
-          
+          <button type="submit" class="btn btn-primary">Add site</button>
         </div>
       </form>
       {% endblock %}
